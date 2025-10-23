@@ -46,6 +46,14 @@ const msgRetryCounterCache = new NodeCache();
 
 assertInstalled(process.platform === 'win32' ? 'where ffmpeg' : 'command -v ffmpeg', 'FFmpeg', 0);
 //assertInstalled(process.platform === 'win32' ? 'where magick' : 'command -v convert', 'ImageMagick', 0);
+console.log(chalk.blueBright('Script Alya Bot Ai Active☘️'));
+console.log(chalk.green.bold(`Name Owner : Stefansk`));
+console.log(chalk.green.bold(`Name Bot : Alya`));
+console.log(chalk.green.bold(`Versi : 2.5.3`));
+console.log(chalk.green.bold(`Type : Case`));
+
+assertInstalled(process.platform === 'win32' ? 'where ffmpeg' : 'command -v ffmpeg', 'FFmpeg', 0);
+//assertInstalled(process.platform === 'win32' ? 'where magick' : 'command -v convert', 'ImageMagick', 0);
 console.log(chalk.greenBright('✅  ALYA BOT AI ACTIVE'));
 console.log(chalk.green.bold(`╔═════[${`${chalk.cyan(userInfoSyt())}@${chalk.cyan(os.hostname())}`}]═════`));
 print('OS', `${os.platform()} ${os.release()} ${os.arch()}`);
@@ -68,6 +76,9 @@ server.listen(PORT, () => {
 	* Whatsapp : https://whatsapp.com/channel/0029VaWOkNm7DAWtkvkJBK43
 */
 
+// Auto Join Saluran 
+
+//
 async function startAlyaBot() {
 	const { state, saveCreds } = await useMultiFileAuthState('stefandev');
 	const { version, isLatest } = await fetchLatestBaileysVersion();

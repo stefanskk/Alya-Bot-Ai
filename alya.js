@@ -183,6 +183,8 @@ module.exports = alya = async (alya, m, msg, store) => {
 		const isBan = db.users[m.sender] ? db.users[m.sender].ban : false
 		const isLimit = db.users[m.sender] ? (db.users[m.sender].limit > 0) : false
 		const isPremium = isCreator || checkStatus(m.sender, premium) || false
+		const isRegist = db.users[m.sender] ? db.users[m.sender].register : false
+		const isRegists = db.users[m.sender] ? db.users[m.sender].register : true
 		const isNsfw = m.isGroup ? db.groups[m.chat].nsfw : false
 		
 		// Fake
@@ -195,7 +197,7 @@ module.exports = alya = async (alya, m, msg, store) => {
 			},
 			message: {
 				contactMessage: {
-					displayName: (m.pushName || author),
+					displayName: `Alya Bot\nBy Stefansk✓`,
 					vcard: `BEGIN:VCARD\nVERSION:3.0\nN:XL;${m.pushName || author},;;;\nFN:${m.pushName || author}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
 					sendEphemeral: true
 				}
@@ -231,7 +233,7 @@ module.exports = alya = async (alya, m, msg, store) => {
 			scheduled: true,
 			timezone: 'Asia/Jakarta'
 		});
-		
+	
 		// Auto Set Bio
 		if (set.autobio) {
 			if (new Date() * 1 - set.status > 60000) {
@@ -857,6 +859,47 @@ console.log(log);
 			break
 			
 			// Owner Menu
+			case 'upch':  {
+
+    if (!isCreator) return m.reply(mess.owner)
+    if (!text) return m.reply(`Contoh:\n${prefix}${command} Halo?`)
+    let who = m.sender;
+    let url = await alya.profilePictureUrl(who, 'image').catch(() => null);
+    let idch = '120363398255723276@newsletter'; // ISI IDCHNYA DI SINI
+
+    let username = alya.getName(who);
+    await alya.sendMessage(m.chat, { react: { text: "⏳", key: m.key } });
+
+    let q = m.quoted ? m.quoted : m;
+    let mime = q.mimetype || '';
+
+    let content = { text };
+    if (mime.includes('image')) {
+        let content = { image: await q.download(), caption: text };
+    } else if (mime.includes('video')) {
+        let content = { video: await q.download(), caption: text };
+    } else if (mime.includes('audio')) {
+        let content = { audio: await q.download(), mimetype: 'audio/mpeg', fileName: 'iyah.mp3', ptt: true };
+    }
+
+    content.contextInfo = {
+        externalAdReply: {
+            title: `Alya Bot Ai`,
+            body: `Pesan Dari Owner ( stefansk )`,
+            thumbnailUrl: url,
+            sourceUrl: null,
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
+        }
+    };
+
+    await alya.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+    m.reply('PESAN MU TELAH TERKIRIM SILAHKAN CEK CHANNEL ANDA\nhttps://whatsapp.com/channel/0029Vb0rvI5HwXb6tu2H4H0A');
+
+    await alya.sendMessage(idch, content);
+};
+break
 			case 'shutdown': case 'off': {
 				if (!isCreator) return m.reply(mess.owner)
 				m.reply(`*[BOT] Process Shutdown...*`).then(() => {
@@ -1407,26 +1450,41 @@ break
 			}
 			break
 			case 'sc': case 'script': {
-				await m.reply(`Script Alya Bot Ai\nhttps://github.com/stefanskk/Alya-Bot-Ai\n\nSaluran Bot\nhttps://whatsapp.com/channel/0029Vb0rvI5HwXb6tu2H4H0A`, {
-					contextInfo: {
-						forwardingScore: 10,
-						isForwarded: true,
-						forwardedNewsletterMessageInfo: {
-							newsletterJid: my.ch,
-							serverMessageId: null,
-							newsletterName: 'Join For More Info'
-						},
-						externalAdReply: {
-							title: author,
-							body: 'Subscribe My YouTube',
-							thumbnail: fake.thumbnail,
-							mediaType: 2,
-							mediaUrl: my.yt,
-							sourceUrl: my.yt,
-						}
-					}
-				})
-			}
+				const caption = `
+Script Alya Bot Ai
+https://github.com/stefanskk/Alya-Bot-Ai
+
+Saluran Bot
+https://whatsapp.com/channel/0029Vb0rvI5HwXb6tu2H4H0A`.trim();
+
+        const buttons = [{
+                buttonId: `.menu`,
+                buttonText: {
+                    displayText: 'Menu 🤖'
+                },
+                type: 1
+            },
+            {
+                buttonId: `.owner`,
+                buttonText: {
+                    displayText: 'Owner 🧑‍💻'
+                },
+                type: 1
+            }
+        ];
+
+        await alya.sendMessage(m.chat, {
+            image: {
+                url: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1760865578855-sdc7yz.jpg`
+            },
+            caption,
+            footer: botname,
+            buttons,
+            headerType: 4
+        }, {
+            quoted: m
+        });
+        }
 			break
 			case 'donasi': case 'donate': {
 				m.reply('Donasi Dapat Melalui No Dibawah Ini :\n0851 3737 5162')
@@ -1660,6 +1718,16 @@ break
 			break
 			
 			// Bot Menu
+			case 'register': {
+			if (!text) return m.reply('*Format Salah!*\nContoh : .register nama umur\nContoh : .register stefan 23')
+			if (!isRegists) return m.reply('Anda Sudah Terdaftar')
+			
+			db.users[m.sender].register = true
+			db.users[m.sender].limit += 10
+	    	db.users[m.sender].uang += 5000
+			m.reply(`*Berhasil Daftar* 🎉\n*Hadiah🎁*\n*Limit : +10*\n*Money : +5000*`)
+			}
+			break
 			case 'owner': case 'listowner': {
 				await alya.sendContact(m.chat, ownerNumber, m);
 			}
@@ -2680,74 +2748,45 @@ break
 				}
 			}
 			break
-			case 'play': case 'ytplay': {
-			if (!text) return m.reply(`Masukkan judul video!\n\nContoh:\n.${command} lathi`);
-const youtube = google.youtube({
-            version: 'v3',
-            auth: 'AIzaSyA6rcAS8Nu5NK3Oqxk2biiWVjT0TMfmPwk',
-        });
-        const res = await youtube.search.list({
-            part: 'snippet',
-            q: text,
-            type: 'video',
-            maxResults: 1,
-            order: 'relevance',
-        });
+			case 'play': case 'ytplay': case 'yts': case 'ytsearch': case 'youtubesearch': {
 
-        if (!res.data.items || res.data.items.length === 0) {
-            return m.reply('❌ Tidak ada hasil yang ditemukan.');
-        }
+                if (!isLimit) return m.reply(mess.limit)
 
-        const video = res.data.items[0];
-        const videoId = video.id.videoId;
-        const title = video.snippet.title;
-        const channel = video.snippet.channelTitle;
-        const publishedAt = new Date(video.snippet.publishedAt).toLocaleDateString();
-        const thumbnail = video.snippet.thumbnails.high.url;
-        const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                if (!text) return m.reply(`Example: ${prefix + command} dj Tia Monica`)
 
-        const caption = `
-🌟✨ *YOUTUBE MAGIC PLAYER* ✨🌟
+                alya.sendButtonMsg(m.chat, { react: { text: `⏱️`, key: m.key }})
+  let data = (await yts(text)).all
+  let hasil = data[~~(Math.random() * data.length)]
+  let url = `${hasil.image}`
+   let caption = '';
+      caption += `∘ Judul : ${hasil.title}\n`;
+      caption += `∘ Ext : Search\n`;
+      caption += `∘ ID : ${hasil.videoId}\n`;
+      caption += `∘ Durasi : ${hasil.timestamp}\n`;
 
-📣 *JUDUL KONTEN:* _${title}_
-🏷️ *CHANNEL KEREN:* _${channel}_
-🗓️ *TANGGAL RILIS:* _${publishedAt}_
+      caption+= `∘ Description : ${hasil.description || 'Tidak tersedia'}\n`;
+      caption += `∘ Penonton : ${hasil.views}\n`;
+      caption += `∘ Diunggah : ${hasil.ago}\n`;
+      caption += `∘ Channel : ${hasil.author.url}\n`;
+      caption += `∘ Url : ${hasil.url}\n`;
+      caption += `∘ Thumbnail : ${hasil.image}`;
+  alya.sendButtonMsg(m.chat, {
+  image: { url: url },
+  caption: caption, 
+  buttons: [
 
-🎉 Pilih mode unduhan yang kamu suka:
-🔊 *Audio Only* 🎧
-🎥 *Full Video* 🎞️
+    { buttonId: `.ytmp3 ${hasil.url}`, buttonText: { displayText: `Download Audio` }, type: 1 },
+    { buttonId: `.ytmp4 ${hasil.url}`, buttonText: { displayText: `Download Video` }, type: 1 },
+    { buttonId: `.${command} ${text}`, buttonText: { displayText: 'Next Search' }, type: 1 }
+  ],
+}, { quoted: m })
 
-👇 Klik formatnya, jangan malu-malu 👇
-`.trim();
+alya.sendMessage(m.chat, { react: { text: `✅️`, key: m.key }})
+}
 
-        const buttons = [{
-                buttonId: `.ytmp3 ${videoUrl}`,
-                buttonText: {
-                    displayText: 'Audio 🎧'
-                },
-                type: 1
-            },
-            {
-                buttonId: `.ytmp4 ${videoUrl}`,
-                buttonText: {
-                    displayText: 'Video 🎞️'
-                },
-                type: 1
-            }
-        ];
+        
 
-        await alya.sendMessage(m.chat, {
-            image: {
-                url: thumbnail
-            },
-            caption,
-            footer: botname,
-            buttons,
-            headerType: 4
-        }, {
-            quoted: m
-        });
-        }
+break
 			case 'pixiv': {
 				if (!isLimit) return m.reply(mess.limit)
 				if (!text) return m.reply(`Example: ${prefix + command} hu tao`)
@@ -3069,7 +3108,7 @@ const youtube = google.youtube({
 
         const buffer = fs.readFileSync(outputPath);
 
-        await alya.sendMessage(m.chat, {
+        await alya.sendButtonMsg(m.chat, {
             video: buffer,
             caption: `🎬 *${data.title}*`,
             fileName: `${data.title}.mp4`,
@@ -3131,10 +3170,10 @@ const youtube = google.youtube({
 					const hasil = await tiktokDl(text);
 					m.reply(mess.wait)
 					if (hasil && hasil.size_nowm) {
-						await alya.sendFileUrl(m.chat, hasil.data[1].url, `*📍Title:* ${hasil.title}\n*⏳Duration:* ${hasil.duration}\n*🎃Author:* ${hasil.author.nickname} (@${hasil.author.fullname})`, m)
+						await alya.sendFileUrl(m.chat, hasil.data[1].url, `*Tiktok Downloader* 🎥\n\n*👀Judul :* ${hasil.title}\n*⏱️Durasi :* ${hasil.duration}\n*👤Akun :* ${hasil.author.nickname} (@${hasil.author.fullname})`, m)
 					} else {
 						for (let i = 0; i < hasil.data.length; i++) {
-							await alya.sendFileUrl(m.chat, hasil.data[i].url, `*🚀Image:* ${i+1}`, m)
+							await alya.sendFileUrl(m.chat, hasil.data[i].url, `*📷Gambar:* ${i+1}`, m)
 						}
 					}
 					setLimit(m, db)
@@ -3502,7 +3541,6 @@ case 'mediafire': {
 			case 'coba': {
 				let anu = ['Aku Monyet','Aku Kera','Aku Tolol','Aku Kaya','Aku Dewa','Aku Anjing','Aku Dongo','Aku Raja','Aku Sultan','Aku Baik','Aku Hitam','Aku Suki']
 				await alya.sendButtonMsg(m.chat, {
-					text: 'Semoga Hoki😹',
 					buttons: [{
 						buttonId: 'teshoki',
 						buttonText: { displayText: '\n' + pickRandom(anu)},
@@ -3511,9 +3549,47 @@ case 'mediafire': {
 						buttonId: 'cobacoba',
 						buttonText: { displayText: '\n' + pickRandom(anu)},
 						type: 1
-					}]
-				})
-			}
+					}], 
+  image: { url: 'https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761200982335-8eez50.jpg' },
+
+  caption: 'Semoga Hoki😂',
+
+  contextInfo: {
+
+    forwardingScore: 999,
+
+    isForwarded: true,
+
+    mentionedJid: [m.sender],
+
+    forwardedNewsletterMessageInfo: {
+
+      newsletterName: '— Alya Bot',
+
+      newsletterJid: '120363398255723276@newsletter'
+
+    },
+
+    externalAdReply: {
+
+      title: 'Alya',
+
+      body: 'Create By Stefansk',
+
+      thumbnailUrl: 'https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761200982335-8eez50.jpg',
+
+      sourceUrl: 'https://whatsapp.com/channel/0029Vb0rvI5HwXb6tu2H4H0A',
+
+      mediaType: 1,
+
+      renderLargerThumbnail: false
+
+    }
+
+  }
+
+}, { quoted: m });		
+}
 			break
 			
 			// Game Menu
@@ -3891,7 +3967,7 @@ case 'mediafire': {
 					m.reply('Berhasil Menghapus Sesi Game')
 					break
 					default:
-					m.reply(`🐍🪜GAME ULARTANGGA\nCommand: ${prefix + command} <command>\n- create\n- join\n- start\n- leave\n- end`)
+					m.reply(`??🪜GAME ULARTANGGA\nCommand: ${prefix + command} <command>\n- create\n- join\n- start\n- leave\n- end`)
 				}
 			}
 			break
@@ -4185,173 +4261,94 @@ case 'mediafire': {
 			
 			// Menu
 			case 'menu': {
-				const hari = moment.tz('Asia/Jakarta').locale('id').format('dddd');
-	const tanggal = moment.tz('Asia/Jakarta').locale('id').format('DD/MM/YYYY');
-	const jam = moment.tz('Asia/Jakarta').locale('id').format('HH:mm:ss');
-	const ucapanWaktu = jam < '05:00:00' ? 'Selamat Pagi 🌉' : jam < '11:00:00' ? 'Selamat Pagi 🌄' : jam < '15:00:00' ? 'Selamat Siang 🏙' : jam < '18:00:00' ? 'Selamat Sore 🌅' : jam < '19:00:00' ? 'Selamat Sore 🌃' : jam < '23:59:00' ? 'Selamat Malam 🌌' : 'Selamat Malam 🌌';
-	
-	let total = Object.entries(db.hit).sort((a, b) => b[1] - a[1]).slice(0, Math.min(7, Object.keys(db.hit).length)).filter(([command]) => command !== 'totalcmd' && command !== 'todaycmd').slice(0, 5);
-	
-	let text = `╭──❍「 *TOP MENU* 」❍\n`
-	
-	if (total && total.length >= 5) {
-		total.forEach(([command, hit], index) => {
-			text += `│${setv} ${prefix}${command}: ${hit} hits\n`
-		})
-		text += '╰──────❍'
-	} else text += `│${setv} ${prefix}ai
-│${setv} ${prefix}brat
-│${setv} ${prefix}tiktok
-│${setv} ${prefix}cekmati
-│${setv} ${prefix}susunkata
-╰──────❍`
-const info = `╔═══ ❖ 𝙱𝙾𝚃 𝙸𝙽𝙵𝙾 ❖ ═══╗
-║ 🤖 𝙽𝚊𝚖𝚊       : 𝙰𝚕𝚢𝚊
-║ 👑 𝙾𝚠𝚗𝚎𝚛      : @${ownerNumber[0].split('@')[0]}
-║ 🔧 𝙼𝚘𝚍𝚎       : ${alya.public ? '𝙿𝚞𝚋𝚕𝚒𝚌' : '𝚂𝚎𝚕𝚏'}
-║ ☕ 𝙿𝚛𝚎𝚏𝚒𝚡     : ${set.multiprefix ? '「 𝙼𝚄𝙻𝚃𝙸-𝙿𝚁𝙴𝙵𝙸𝚇 」' : ' *'+prefix+'*' }
-║ 🌟 𝙵𝚒𝚝𝚞𝚛 𝙿𝚛𝚎𝚖 : 🔸
-╚═══════════════════╝\n`
-alya.sendMessage(m.chat, {
-  footer: global.packname,
-  buttons: [
-    {
-      buttonId: 'action',
-      buttonText: { displayText: 'ini pesan interactiveMeta' },
-      type: 4,
-      nativeFlowInfo: {
-        name: 'single_select',
-        paramsJson: JSON.stringify({
-          title: 'Click To List',
-          sections: [
-            {
-              title: 'INFORMATION',
-              rows: [
-                {
-                  title: 'Script 📥',
-                  description: 'Display Script Alya-Bot',
-                  id: '.sc'
-                },
-                {
-                  title: 'Donasi 💳',
-                  description: 'Mendukung Perkembangan',
-                  id: '.donasi'
-                }
-              ]
-            },
-            {
-              title: 'LIST MENU',
-              highlight_label: 'Recomend',
-              rows: [
-                {
-                  title: 'AllMenu ⚡',
-                  description: 'Menampilkan Allmenu',
-                  id: '.allmenu'
-                },
-                {
-                  title: 'BotMenu 🤖',
-                  description: 'Menampilkan Bot Menu',
-                  id: '.botmenu'
-                },
-                {
-                  title: 'GroupMenu 🗝',
-                  description: 'Menampilkan Group Menu',
-                  id: '.groupmenu'
-                }, 
-                {
-                  title: 'SearchMenu 📡',
-                  description: 'Menampilkan Search Menu',
-                  id: '.searchmenu'
-                }, 
-                {
-                  title: 'DownloadMenu 📥',
-                  description: 'Menampilkan Download Menu',
-                  id: '.downloadmenu'
-                }, 
-                {
-                  title: 'QuotesMenu 🩷',
-                  description: 'Menampilkan Quotes Menu',
-                  id: '.quotesmenu'
-                }, 
-                {
-                  title: 'ToolsMenu 🛠',
-                  description: 'Menampilkan Download Menu',
-                  id: '.toolsmenu'
-                }, 
-                {
-                  title: 'AiMenu 🤖',
-                  description: 'Menampilkan Ai Menu',
-                  id: '.aimenu'
-                }, 
-                {
-                  title: 'PanelMenu 🕹',
-                  description: 'Menampilkan Panel Menu',
-                  id: '.panelmenu'
-                }, 
-                {
-                  title: 'StalkerMenu 👁',
-                  description: 'Menampilkan Rpg Menu',
-                  id: '.stalkermenu'
-                },
-                {
-                  title: 'RandomMenu 🛬',
-                  description: 'Menampilkan Random Menu',
-                  id: '.randommenu'
-                },
-                {
-                  title: 'FunMenu 📽',
-                  description: 'Menampilkan Fun Menu',
-                  id: '.funmenu'
-                },
-                {
-                  title: 'GameMenu 🎮',
-                  description: 'Menampilkan Menu Menu',
-                  id: '.gamemenu'     
-                }, 
-                {
-                  title: 'AnimeMenu 😍',
-                  description: 'Menampilkan Anime Menu',
-                  id: '.animemenu'
-                },
-                {
-                  title: 'OwnerMenu 👑',
-                  description: 'Menampilkan Owner Menu',
-                  id: '.ownermenu'
-                }
-              ]
-            }
-          ]
-        })
-      }
-    }
-  ],
-  headerType: 1,
-  viewOnce: true,
-  image: { url: globalpp },
-  caption: info + text,
-  contextInfo: {
-    forwardingScore: 999,
-    isForwarded: true,
-    mentionedJid: [m.sender],
-    forwardedNewsletterMessageInfo: {
-      newsletterName: '— Alya Bot',
-      newsletterJid: '120363398255723276@newsletter'
-    },
-    externalAdReply: {
-      title: 'Alya',
-      body: 'Create By Stefansk',
-      thumbnailUrl: globalpp,
-      sourceUrl: 'https://whatsapp.com/channel/0029Vb0rvI5HwXb6tu2H4H0A',
-      mediaType: 1,
-      renderLargerThumbnail: false
-    }
-  }
-}, { quoted: m });
-Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1760687529826-4x75eb.mp4`)
-await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: m })     
-break 
-			}
-			break
+const info = ` ⟢━━❪ *𝘉𝘰𝘵 𝘐𝘯𝘧𝘰* ❫━━⟣
+- 🤖 𝙱𝚘𝚝 : 𝙰𝚕𝚢𝚊 𝙰𝚒
+- 👨‍💻 𝙾𝚠𝚗𝚎𝚛      : @${ownerNumber[0].split('@')[0]}
+- 👾 𝙼𝚘𝚍𝚎       : ${alya.public ? '𝙿𝚞𝚋𝚕𝚒𝚌' : '𝚂𝚎𝚕𝚏'}
+- 🔑 𝙵𝚒𝚝𝚞𝚛 𝙿𝚛𝚎𝚖 : 🔸
+> Stefansk \n`
+await alya.sendButtonMsg(m.chat, {
+      	  image: { url: 'https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761200982335-8eez50.jpg' },      
+			text: info,
+			footer: 'Alya Bot',
+			mentions: [m.sender],
+			contextInfo: {
+				forwardingScore: 999,
+				isForwarded: true,
+	        }, 
+			buttons: [{
+				buttonId: `${prefix}allmenu`,
+				buttonText: { displayText: '𝙰𝚕𝚕𝚖𝚎𝚗𝚞' },
+				type: 1
+			},{
+				buttonId: `${prefix}sc`,
+				buttonText: { displayText: '𝚂𝚌𝚛𝚒𝚙𝚝' },
+				type: 1
+			}, {
+				buttonId: 'list_button',
+				buttonText: { displayText: 'list' },
+				nativeFlowInfo: {
+					name: 'single_select',
+					paramsJson: JSON.stringify({
+						title: '𝙱𝚘𝚝 𝚆𝚑𝚊𝚝𝚜𝙰𝚙𝚙',
+						sections: [{
+							title: '𝙼𝚎𝚗𝚞 𝙰𝚕𝚢𝚊',
+							rows: [{
+								title: '𝙰𝚕𝚕𝚖𝚎𝚗𝚞🐸',
+								id: `${prefix}allmenu`
+							},{
+								title: '𝙱𝚘𝚝𝚖𝚎𝚗𝚞👻',
+								id: `${prefix}botmenu`
+							},{
+								title: '𝙶𝚛𝚘𝚞𝚙𝚖𝚎𝚗u💢',
+								id: `${prefix}groupmenu`
+							},{
+								title: '𝚂𝚎𝚊𝚛𝚌𝚑𝚖𝚎𝚗𝚞👀',
+								id: `${prefix}searchmenu`
+							},{
+								title: '𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍𝚖𝚎𝚗𝚞🎃',
+								id: `${prefix}downloadmenu`
+							},{
+								title: '𝚀𝚞𝚘𝚝𝚎𝚜𝚖𝚎𝚗𝚞💤',
+								id: `${prefix}quotesmenu`
+							},{
+								title: '𝚃𝚘𝚕𝚜𝚖𝚎𝚗𝚞💫',
+								id: `${prefix}toolsmenu`
+							},{
+								title: '𝙰𝚒𝚖𝚎𝚗𝚞🤖',
+								id: `${prefix}aimenu`
+							},{
+								title: '𝚂𝚝𝚊𝚕𝚔𝚎𝚛𝚖𝚎𝚗𝚞🌹',
+								id: `${prefix}stalkermenu`
+							},{
+								title: '𝚁𝚊𝚗𝚍𝚘𝚖𝚖𝚎𝚗𝚞🐣',
+								id: `${prefix}randommenu`
+							},{
+								title: '𝙰𝚗𝚒𝚖𝚎𝚖𝚎𝚗𝚞🍄',
+								id: `${prefix}animemenu`
+							},{
+								title: '𝙶𝚊𝚖𝚎𝚖𝚎𝚗𝚞🍂',
+								id: `${prefix}gamemenu`
+							},{
+								title: '𝙵𝚞𝚗𝚖𝚎𝚗𝚞🌸',
+								id: `${prefix}funmenu`
+							},{
+								title: '𝙿𝚊𝚗𝚎𝚕𝚖𝚎𝚗𝚞💥',
+								id: `${prefix}panelmenu`
+							},{
+								title: '𝙾𝚠𝚗𝚎𝚛𝚖𝚎𝚗𝚞🌈',
+								id: `${prefix}ownermenu`, 
+ 		  	        	}]
+						}]
+					})
+				},
+				type: 2
+			}]
+		}, { quoted: fkontak })
+				  Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761116200117-tf5k5q.mpeg`)
+                  await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+                  }
+                  break 
 			case 'allmenu': {
 				const menunya = `
 ╔═══ ❖ 𝚄𝚂𝙴𝚁 𝙸𝙽𝙵𝙾 ❖ ═══╗
@@ -4406,7 +4403,7 @@ break
 ║ ${setv} ${prefix}𝚓𝚊𝚍𝚒𝚋𝚘𝚝 🔸
 ║ ${setv} ${prefix}𝚜𝚝𝚘𝚙𝚓𝚊𝚍𝚒𝚋𝚘𝚝
 ║ ${setv} ${prefix}𝚕𝚒𝚜𝚝𝚓𝚊𝚍𝚒𝚋𝚘𝚝
-║ ${setv} ${prefix}𝚍𝚘𝚗𝚊𝚜𝚒
+║ ${setv} ${prefix}𝚍𝚘𝚗𝚊𝚜??
 ║ ${setv} ${prefix}𝚊𝚍𝚍𝚜𝚎𝚠𝚊
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚜𝚎𝚠𝚊
 ║ ${setv} ${prefix}𝚕𝚒𝚜𝚝𝚜𝚎𝚠𝚊
@@ -4542,9 +4539,9 @@ break
 ║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚔𝚒𝚖𝚒𝚊
 ║ ${setv} ${prefix}𝚌𝚊𝚔𝚕𝚘𝚗𝚝𝚘𝚗𝚐
 ║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚊𝚗𝚐𝚔𝚊
-║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚗𝚎𝚐𝚊𝚛𝚊
+║ ${setv} ${prefix}??𝚎𝚋𝚊𝚔𝚗𝚎𝚐𝚊𝚛𝚊
 ║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚐𝚊𝚖𝚋𝚊𝚛
-║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚋𝚎𝚗𝚍𝚎𝚛𝚊
+║ ${setv} ${prefix}𝚝𝚎𝚋𝚊𝚔𝚋??𝚗𝚍𝚎𝚛𝚊
 ╚═══════════════════════╝
 ╔═══ ❖ 𝙿𝙰𝙽𝙴𝙻 𝙼𝙴𝙽𝚄 ❖ ═══╗
 ║ ${setv} ${prefix}1𝚐𝚋
@@ -4629,7 +4626,7 @@ break
 ║ ${setv} ${prefix}𝚐𝚎𝚝𝚜𝚎𝚜𝚜𝚒𝚘𝚗
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚜𝚎𝚜𝚜𝚒𝚘𝚗
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚜𝚊𝚖𝚙𝚊𝚑
-║ ${setv} ${prefix}𝚞??𝚜𝚠
+║ ${setv} ${prefix}𝚞𝚙𝚜𝚠
 ║ ${setv} ${prefix}𝚋𝚊𝚌𝚔𝚞𝚙
 ║ ${setv} ${prefix}$
 ║ ${setv} ${prefix}>
@@ -4641,17 +4638,19 @@ break
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'botmenu': {
 				const menunya = `
 ╔═══ ❖ 𝙱𝙾𝚃 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4672,7 +4671,7 @@ break
 ║ ${setv} ${prefix}𝚒𝚗𝚜𝚙𝚎𝚌𝚝 (url gc)
 ║ ${setv} ${prefix}𝚊𝚍𝚍𝚖𝚜𝚐
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚖𝚜𝚐
-║ ${setv} ${prefix}𝚐𝚎𝚝𝚖𝚜𝚐
+║ ${setv} ${prefix}𝚐𝚎𝚝𝚖𝚜??
 ║ ${setv} ${prefix}𝚕𝚒𝚜𝚝𝚖𝚜𝚐
 ║ ${setv} ${prefix}𝚜𝚎𝚝𝚌𝚖𝚍
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚌𝚖𝚍
@@ -4696,17 +4695,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'groupmenu': {
 				const menunya = `
 ╔═══ ❖ 𝙶𝚁𝙾𝚄𝙿 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4737,17 +4738,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'searchmenu': {
 				const menunya = `
 ╔═══ ❖ 𝚂𝙴𝙰𝚁𝙲𝙷 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4771,17 +4774,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'downloadmenu': {
 				const menunya = `
 ╔═══ ❖ 𝙳𝙾𝚆𝙽𝙻𝙾𝙰𝙳 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4800,17 +4805,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'quotesmenu': {
 				const menunya = `
 ╔═══ ❖ 𝚀𝚄𝙾𝚃𝙴𝚂 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4828,17 +4835,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'toolsmenu': {
 				const menunya = `
 ╔═══ ❖ 𝚃𝙾𝙾𝙻𝚂 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4862,7 +4871,7 @@ await alya.sendMessage(m.chat, {
 ║ ${setv} ${prefix}𝚌𝚘𝚕𝚘𝚛𝚒𝚣𝚎 (img)
 ║ ${setv} ${prefix}𝚑𝚒𝚝𝚊𝚖𝚔𝚊𝚗 (img)
 ║ ${setv} ${prefix}𝚎𝚖𝚘𝚓𝚒𝚖𝚒𝚡 🙃+💀
-║ ${setv} ${prefix}𝚗𝚞𝚕𝚒𝚜
+║ ${setv} ${prefix}??𝚞𝚕𝚒𝚜
 ║ ${setv} ${prefix}𝚛𝚎𝚊𝚍𝚖𝚘𝚛𝚎 text1|text2
 ║ ${setv} ${prefix}𝚚𝚌 (pesannya)
 ║ ${setv} ${prefix}𝚝𝚛𝚊𝚗𝚜𝚕𝚊𝚝𝚎
@@ -4890,17 +4899,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'aimenu': {
 				const menunya = `
 ╔═══ ❖ 𝙰𝙸 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4915,17 +4926,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'randommenu': {
 				const menunya = `
 ╔═══ ❖ 𝚁𝙰𝙽𝙳𝙾𝙼 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4937,17 +4950,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'stalkermenu': {
 				const menunya = `
 ╔═══ ❖ 𝚂𝚃𝙰𝙻𝙺𝙴𝚁 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -4964,17 +4979,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'panelmenu': {
 				const menunya = `
 ╔═══ ❖ 𝙿𝙰𝙽𝙴𝙻 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -5001,17 +5018,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'animemenu': {
 				const menunya = `
 ╔═══ ❖ 𝙰𝙽𝙸𝙼𝙴 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -5024,17 +5043,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'gamemenu': {
 				const menunya = `
 ╔═══ ❖ 𝙶𝙰𝙼𝙴 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -5047,7 +5068,7 @@ await alya.sendMessage(m.chat, {
 ║ ${setv} ${prefix}𝚞𝚕𝚊𝚛𝚝𝚊𝚗𝚐𝚐𝚊
 ║ ${setv} ${prefix}𝚋𝚕𝚊𝚌𝚔𝚓𝚊𝚌𝚔
 ║ ${setv} ${prefix}𝚌𝚊𝚝𝚞𝚛
-║ ${setv} ${prefix}𝚌𝚊𝚜𝚒𝚗𝚘 (nominal)
+║ ${setv} ${prefix}𝚌𝚊𝚜??𝚗𝚘 (nominal)
 ║ ${setv} ${prefix}𝚜𝚊𝚖𝚐𝚘𝚗𝚐 (nominal)
 ║ ${setv} ${prefix}𝚛𝚊𝚖𝚙𝚘𝚔 (@tag)
 ║ ${setv} ${prefix}𝚝𝚎𝚔𝚊𝚝𝚎𝚔𝚒
@@ -5069,17 +5090,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case 'funmenu': {
 				const menunya = `
 ╔═══ ❖ 𝙵𝚄𝙽 𝙼𝙴𝙽𝚄 ❖ ═══╗
@@ -5092,7 +5115,7 @@ await alya.sendMessage(m.chat, {
 ║ ${setv} ${prefix}𝚔𝚎𝚛𝚊𝚗𝚐𝚊𝚓𝚊𝚒𝚋 (text)
 ║ ${setv} ${prefix}𝚌𝚎𝚔𝚖𝚊𝚝𝚒 (nama lu)
 ║ ${setv} ${prefix}𝚌𝚎𝚔𝚜𝚒𝚏𝚊𝚝
-║ ${setv} ${prefix}𝚌𝚎𝚔𝚔𝚑𝚘𝚍𝚊𝚖 (nama lu)
+║ ${setv} ${prefix}𝚌𝚎𝚔𝚔𝚑𝚘𝚍𝚊?? (nama lu)
 ║ ${setv} ${prefix}𝚛𝚊𝚝𝚎 (reply pesan)
 ║ ${setv} ${prefix}𝚓𝚘𝚍𝚘𝚑𝚔𝚞
 ║ ${setv} ${prefix}𝚓𝚊𝚍𝚒𝚊𝚗
@@ -5109,17 +5132,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+break 
 			case "1gb": case "2gb": case "3gb": case "4gb": case "5gb": 
 case "6gb": case "7gb": case "8gb": case "9gb": case "10gb": 
 case "unlimited": case "unli": {
@@ -5406,14 +5431,14 @@ m.reply('*SUCCESSFULLY DELETE THE USER*')
 ║ ${setv} ${prefix}𝚋𝚊𝚗
 ║ ${setv} ${prefix}𝚞𝚗𝚋𝚊𝚗
 ║ ${setv} ${prefix}𝚖𝚞𝚝𝚎
-║ ${setv} ${prefix}𝚞𝚗??𝚞𝚝𝚎
+║ ${setv} ${prefix}𝚞𝚗𝚖𝚞𝚝𝚎
 ║ ${setv} ${prefix}𝚌𝚛𝚎𝚊𝚝𝚎𝚐𝚌
 ║ ${setv} ${prefix}𝚌𝚕𝚎𝚊𝚛𝚌𝚑𝚊𝚝
 ║ ${setv} ${prefix}𝚊𝚍𝚍𝚙𝚛𝚎𝚖
 ║ ${setv} ${prefix}𝚍𝚎𝚕𝚙𝚛𝚎𝚖
 ║ ${setv} ${prefix}𝚕𝚒𝚜𝚝𝚙𝚛𝚎𝚖
 ║ ${setv} ${prefix}𝚊𝚍𝚍𝚕𝚒𝚖𝚒𝚝
-║ ${setv} ${prefix}𝚊𝚍𝚍𝚞𝚊𝚗??
+║ ${setv} ${prefix}𝚊𝚍𝚍𝚞𝚊𝚗𝚐
 ║ ${setv} ${prefix}𝚜𝚎𝚝𝚋𝚘𝚝𝚊𝚞𝚝𝚑𝚘𝚛
 ║ ${setv} ${prefix}𝚜𝚎𝚝𝚋𝚘𝚝𝚗𝚊𝚖𝚎
 ║ ${setv} ${prefix}𝚜𝚎𝚝𝚋𝚘𝚝𝚙𝚊𝚌𝚔𝚗𝚊𝚖𝚎
@@ -5437,17 +5462,19 @@ await alya.sendMessage(m.chat, {
             externalAdReply: {
                 title: `${botname} | ${moment().tz('Asia/Jakarta').format('HH:mm')}`,
                 body: packname,
-                thumbnailUrl: globalpp,
+                thumbnailUrl: `https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761216557555-gvwlpb.jpg`,
                 sourceUrl: my.gh,
                 mediaType: 1,
                 renderLargerThumbnail: true
             }
         }
     }, {
-        quoted: m
+        quoted: fkontak
     });
-			}
-			break
+    Stefansk = await getBuffer(`https://raw.githubusercontent.com/NdikzDatabase/Database/main/Database/1761215900821-g1852x.mpeg`)
+    await alya.sendMessage(m.chat, { audio: Stefansk, mimetype: 'audio/mp4', ptt: false }, { quoted: fkontak })	
+}
+	        break
 
 			default:
 			if (budy.startsWith('>')) {
